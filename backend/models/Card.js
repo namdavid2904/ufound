@@ -9,6 +9,10 @@ var cardSchema = new mongoose.Schema({
     studentName: {
         type: String
     },
+    locationFound: {
+        type: String,
+        required: true
+    },
     imagePath: {
         type: String,
         required: true
