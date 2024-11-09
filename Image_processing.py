@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 
 from PIL import Image
-
 from ultralytics import YOLO
 from utils import determine_orientation
 
@@ -28,5 +27,4 @@ class ImageProcessing():
                     cropped_image = cv2.rotate(cropped_image, cv2.ROTATE_90_CLOCKWISE)
                 if rotations[180]:
                     cropped_image = cv2.rotate(cropped_image, cv2.ROTATE_180)
-                Image.fromarray(cropped_image).show()
-            return Image.fromarray(cropped_image) #If dont want to create a new image use this nparray
+            return Image.fromarray(cropped_image)

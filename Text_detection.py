@@ -1,14 +1,13 @@
 import pytesseract
-from Image_processing import ImageProcessing
-from utils import extract_info
-
-from flask import Flask, request, jsonify
-from PIL import Image
 import io
 import base64
-from pymongo import MongoClient
 import os
 
+from pymongo import MongoClient
+from Image_processing import ImageProcessing
+from utils import extract_info
+from flask import Flask, request, jsonify
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -31,9 +30,10 @@ def process_image():
  
         #Extracting text from the newly process Image
         text = pytesseract.image_to_string(new_img)
-        result = collection.insert_one(text)
+        data = extract_info(text)
+        result = collection.insert_one(data)
         return jsonify({
-            "data": text, 
+            "data": data, 
             "db_id": str(result.inserted_id)
         })
     except Exception as e:

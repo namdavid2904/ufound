@@ -1,9 +1,9 @@
-import numpy as np
 import cv2
 import re
-
+import numpy as np
 
 def determine_orientation(image_path = None):
+    '''Determine the orientation of the uCard in the photo'''
     # Load the image
     if isinstance(image_path, str):
         image = cv2.imread(image_path)
