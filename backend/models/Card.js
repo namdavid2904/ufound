@@ -8,6 +8,10 @@ var cardSchema = new mongoose.Schema({
     },
     studentName: {
         type: String
+    },
+    imagePath: {
+        type: String,
+        required: true
     }
 },{
     timestamps: true
