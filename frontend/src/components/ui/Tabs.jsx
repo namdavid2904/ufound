@@ -21,6 +21,8 @@ function Tabs({activeTab, setActiveTab}){
             Search Lost Item
             </button>
         </div>
+
+        
     )
 } 
 
