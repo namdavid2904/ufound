@@ -13,6 +13,10 @@ var cardSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    finderEmail: {
+        type: String,
+        required: true
+    },
     imagePath: {
         type: String,
         required: true
