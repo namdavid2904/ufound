@@ -1,32 +1,44 @@
 import pytesseract
-from Image_processing import ImageProccessing
-from flask import jsonify
+from Image_processing import ImageProcessing
+from utils import extract_info
+
+from flask import Flask, request, jsonify
+from PIL import Image
+import io
+import base64
+from pymongo import MongoClient
+import os
 
 
-#All the text appear in the image
+app = Flask(__name__)
 
-def extract_info(text):
-    name = ''
-    spire_id = ''
-    line_of_string = text.split('\n')
-    for s in line_of_string:
-        words = s.split(" ")
-        for w in words:
-            all_num = True
-            for c in w:
-                if(not c.isdigit()):
-                    all_num = False
-                    break
-            if all_num and len(w) == 8:
-                spire_id = w
-        if (spire_id != ''):
-            name = s[9:]
-            return {'name': name,
-                    'id': spire_id}
-    
-img_proccess = ImageProccessing("models/yolov8m-seg.pt")
-filepath = 'input_img/test (3).jpeg' #Specified the file path to the original img
-new_img = img_proccess.process(filepath)
+# Connect to MongoDB Atlas
+client = MongoClient(os.getenv("MONGODB_URI"))  # Set MongoDB URI as an environment variable
+db = client['your_database_name']
+collection = db['your_collection_name']
 
-text = pytesseract.image_to_string(new_img)
-print(extract_info(text))
+@app.route('/process_image', methods=['POST'])
+def process_image():
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image uploaded"}), 400
+
+        #Read and process the Image
+        image_file = request.files['image']
+        image = Image.open(image_file)
+        img_proccess = ImageProcessing("models/yolov8m-seg.pt")
+        new_img = img_proccess.process(image)
+ 
+        #Extracting text from the newly process Image
+        text = pytesseract.image_to_string(new_img)
+        result = collection.insert_one(text)
+        return jsonify({
+            "data": text, 
+            "db_id": str(result.inserted_id)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
