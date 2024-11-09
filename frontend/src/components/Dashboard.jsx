@@ -9,10 +9,6 @@ import ReportForm from './ReportForm';
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('report');
-    
-
-
-
     return (
       <div className="w-full max-w-xl mx-auto">
         <div className="bg-white rounded-2xl shadow-sm p-8">
