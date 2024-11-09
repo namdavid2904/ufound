@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 var userSchema = new mongoose.Schema({
-    googleID: {
+    googleId: {
         type: String,
         required: true,
         unique: true,
