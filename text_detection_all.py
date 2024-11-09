@@ -15,26 +15,76 @@ from ultralytics import YOLO
 
 class ImageProcessing():
     '''Process the raw Image from the front end'''
-    def __init__(self, model = 'yolov8s-seg.pt') -> None:
+    def __init__(self, model = 'yolov8m-seg.pt') -> None:
         self.model = YOLO(model)
     def process(self, img):
         '''Crop to zoom in the uCard and Rotate to the Upright position 
         to let the OCR Model read the text \nReturn a PIL.Image'''
-        new_image = np.array(img)
-        result = self.model(new_image)
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+
+        np_img = np.array(img)
+
+        result = self.model(np_img)
 
         for r in result:
             for box in r.boxes:
                 if box.cls != 73:
                     continue
                 x_min, y_min, x_max, y_max = map(int, box.xyxy[0])
-                new_image = new_image[int(y_min) : int(y_max), int(x_min) : int(x_max)]
-                rotations = determine_orientation(new_image)
+
+                #Cropping
+                #For cv2 np.array
+                np_img = np_img[int(y_min) : int(y_max), int(x_min) : int(x_max)] 
+                img = img.crop((x_min, y_min, x_max, y_max))
+
+                #Doing rotation
+                rotations = determine_orientation(np_img)
                 if rotations[90]:
-                    new_image = cv2.rotate(new_image, cv2.ROTATE_90_CLOCKWISE)
+                    #For cv2 np.array
+                    np_img = cv2.rotate(np_img, cv2.ROTATE_90_CLOCKWISE)
+                    img = img.rotate(270)
                 if rotations[180]:
-                    new_image = cv2.rotate(new_image, cv2.ROTATE_180)
-            return Image.fromarray(new_image)
+                    #For cv2 np.array
+                    np_img = cv2.rotate(np_img, cv2.ROTATE_180)
+                    img = img.rotate(180)
+
+        # Check if working properly
+        # img.save('After Image Processing.png')
+        return np_img
+
+def open_base64_image(base64_string):
+    """
+    Opens a base64 encoded image using PIL
+    
+    Returns:
+    PIL.Image.Image: The opened image
+    """
+    try:
+        # If the string contains the Data URI scheme, remove it
+        if base64_string.startswith('data:'):
+            # Extract the base64 part after the comma
+            base64_string = base64_string.split(',')[1]
+
+        # Decode the base64 string
+        image_data = base64.b64decode(base64_string)
+
+        # Create a BytesIO object to work with PIL
+        image_buffer = io.BytesIO(image_data)
+
+        # Open the image using PIL
+        image = Image.open(image_buffer)
+        image.load()
+        return image
+
+    except base64.binascii.Error:
+        raise ValueError("Invalid base64 string")
+    except Exception as e:
+        raise ValueError(f"Error opening image: {str(e)}")
+    finally:
+        # Clean up the BytesIO buffer if it was created
+        if 'image_buffer' in locals():
+            image_buffer.close()
 
 def determine_orientation(image:np.array):
     '''Determine the orientation of the uCard in the photo'''
@@ -102,13 +152,15 @@ def process_image():
         if 'image' not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
 
-        #Read and process the Image
-        image_file = request.files['image']
-        image = Image.open(image_file)
-        img_process = ImageProcessing("models/yolov8m-seg.pt")
+        # Read and process the Image
+        image_file = request.files['image'] # -> Data URI URL
+        
+        # Open and Process the Image
+        image = open_base64_image(image_file)
+        img_process = ImageProcessing("models/yolov8x-seg.pt")
         new_img = img_process.process(image)
 
-        #Extracting text from the newly process Image
+        # Extracting text from the newly process Image
         text = pytesseract.image_to_string(new_img)
         data = extract_info(text)
         result = collection.insert_one(data)
@@ -124,7 +176,11 @@ if __name__ == "__main__":
     app.run(debug=True, port=5000)
 
     # Testing Implementation
-    # test_image = Image.open('input_img/test (6).jpeg')
+    # with open('message.txt', 'r') as file:
+    #     link = file.read()
+    
+    # test_image = open_base64_image(link)
+    # test_image.save("test.png")
     # test_img_process = ImageProcessing("models/yolov8m-seg.pt")
     # test_new_img = test_img_process.process(test_image)
 
