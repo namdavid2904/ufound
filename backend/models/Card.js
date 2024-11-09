@@ -12,6 +12,11 @@ var cardSchema = new mongoose.Schema({
     imagePath: {
         type: String,
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['found', 'returned'],
+        default: 'found'
     }
 },{
     timestamps: true
