@@ -25,8 +25,8 @@ def process_image():
         #Read and process the Image
         image_file = request.files['image']
         image = Image.open(image_file)
-        img_proccess = ImageProcessing("models/yolov8m-seg.pt")
-        new_img = img_proccess.process(image)
+        img_process = ImageProcessing("models/yolov8m-seg.pt")
+        new_img = img_process.process(image)
  
         #Extracting text from the newly process Image
         text = pytesseract.image_to_string(new_img)
@@ -42,3 +42,12 @@ def process_image():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
+    #Testing Implementation
+    # test_image = Image.open('input_img/test (6).jpeg')
+    # test_img_process = ImageProcessing("models/yolov8m-seg.pt")
+    # test_new_img = test_img_process.process(test_image)
+
+    # t = pytesseract.image_to_string(test_new_img)
+    # d = extract_info(t)
+    # print(d)
