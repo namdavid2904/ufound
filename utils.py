@@ -2,15 +2,10 @@ import cv2
 import re
 import numpy as np
 
-def determine_orientation(image_path = None):
+def determine_orientation(image:np.array):
     '''Determine the orientation of the uCard in the photo'''
-    # Load the image
-    if isinstance(image_path, str):
-        image = cv2.imread(image_path)
-    else:
-        image = image_path
     #The 90 degree clockwise rotation and 180 degree rotation need to make the image upright
-    orientation = {90: 0, 180:0} 
+    orientation = {90: 0, 180:0}
     h, w = image.shape[:2]
     if h > 1.5*w:
         image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)

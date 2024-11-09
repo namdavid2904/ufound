@@ -13,18 +13,18 @@ class ImageProcessing():
     def process(self, img):
         '''Crop to zoom in the uCard and Rotate to the Upright position 
         to let the OCR Model read the text \nReturn a PIL.Image'''
-        result = self.model(img)
+        new_image = np.array(img)
+        result = self.model(new_image)
 
         for r in result:
-            cropped_image = np.array(img)
             for box in r.boxes:
                 if box.cls != 73:
                     continue
                 x_min, y_min, x_max, y_max = map(int, box.xyxy[0])
-                cropped_image = img[int(y_min) : int(y_max), int(x_min) : int(x_max)]
-                rotations = determine_orientation(cropped_image)
+                new_image = new_image[int(y_min) : int(y_max), int(x_min) : int(x_max)]
+                rotations = determine_orientation(new_image)
                 if rotations[90]:
-                    cropped_image = cv2.rotate(cropped_image, cv2.ROTATE_90_CLOCKWISE)
+                    new_image = cv2.rotate(new_image, cv2.ROTATE_90_CLOCKWISE)
                 if rotations[180]:
-                    cropped_image = cv2.rotate(cropped_image, cv2.ROTATE_180)
-            return Image.fromarray(cropped_image)
+                    new_image = cv2.rotate(new_image, cv2.ROTATE_180)
+            return Image.fromarray(new_image)
