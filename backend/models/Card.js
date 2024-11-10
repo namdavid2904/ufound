@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 var cardSchema = new mongoose.Schema({
-    spireID: {
+    spireId: {
         type: String,
         required: true,
         unique: true
