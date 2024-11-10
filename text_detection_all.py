@@ -137,15 +137,6 @@ def extract_info(text):
             return {'name': name,
                     'id': spire_id}
 
-
-
-app = Flask(__name__)
-
-# Connect to MongoDB Atlas
-client = MongoClient(os.getenv("MONGODB_URI"))  # Set MongoDB URI as an environment variable
-db = client['your_database_name']
-collection = db['your_collection_name']
-
 @app.route('/process_image', methods=['POST'])
 def process_image():
     try:
@@ -172,8 +163,7 @@ def process_image():
         return jsonify({"error": str(e)}), 500
 
 
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+# if __name__ == "__main__":
 
     # Testing Implementation
     # with open('message.txt', 'r') as file:
