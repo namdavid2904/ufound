@@ -21,14 +21,13 @@ var cardSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    status: {
-        type: String,
-        enum: ['found', 'returned'],
-        default: 'found'
-    },
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    embedding: {
+        type: Array,
+        required: true,
     }
 },{
     timestamps: true
