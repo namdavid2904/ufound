@@ -25,6 +25,10 @@ var cardSchema = new mongoose.Schema({
         type: String,
         enum: ['found', 'returned'],
         default: 'found'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 },{
     timestamps: true
