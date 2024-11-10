@@ -39,14 +39,22 @@ const searchLostCard = async (req, res) => {
 
         const { searchQuery } = req.query;
 
+        // Tokenize the search query into individual words
+        const tokens = searchQuery.split(' ').map(token => `"${token}"`).join(' ');
+
         // if (spireId) query.spireId = spireId;
         // if (studentName) query.studentName = studentName;
 
         // const cards = await Card.find(query);
-        const cards = await Card.find({ $text: {
-            $search: searchQuery
-        }});
-
+        // const cards = await Card.find({ $text: {
+            // $search: searchQuery
+        //}});
+        
+        // Full-text search using MongoDB's text search
+        const cards = await Card.find({
+            $text: { $search: tokens }
+        }).sort({ score: { $meta: "textScore" } });
+        
         res.status(200).json(cards);
     } catch (error) {
         console.error('Error searching for lost item:', error);
