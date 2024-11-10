@@ -33,5 +33,11 @@ var cardSchema = new mongoose.Schema({
     timestamps: true
 })
 
+// Create indexes for full-text search with spireId, student name, location
+cardSchema.index({
+    spireId: 'text',
+    studentName: 'text',
+    locationFound: 'text',
+});
 
 module.exports = mongoose.model('Card', cardSchema);
