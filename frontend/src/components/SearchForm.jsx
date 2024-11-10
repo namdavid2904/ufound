@@ -12,13 +12,15 @@ function SearchForm() {
     if (searchQuery.trim()) {
       const results = mockItems.filter(item =>
         (item.type === 'ucard' && (
-          item.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.locationFound.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.finderEmail.toLowerCase().includes(searchQuery.toLowerCase())
+          item.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.spireId?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.locationFound?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.finderEmail?.toLowerCase().includes(searchQuery.toLowerCase())
         )) ||
         (item.type === 'general' && (
-          item.itemDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.locationFound.toLowerCase().includes(searchQuery.toLowerCase())
+          item.itemDescription?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.spireId?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.locationFound?.toLowerCase().includes(searchQuery.toLowerCase())
         ))
       );
       setSearchResults(results);

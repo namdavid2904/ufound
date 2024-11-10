@@ -13,7 +13,7 @@ function ReportForm() {
 
     const [formData, setFormData] = useState({
         studentName: '',
-        cardNumber: '',
+        spireId: '',
         itemDescription: '',
         location: '',
         pinLocation: '',
@@ -29,68 +29,34 @@ function ReportForm() {
         });
     };
 
-    const base64ToBlob = (base64, type = 'image/png') => {
-        const byteCharacters = atob(base64.split(',')[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        return new Blob([byteArray], { type });
-    };
 
+    //MOCK DEMO 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const requestBody = {
-            type: itemType,
-            location: formData.location,
-            image: image,
-            imageFile: null,
-            coordinates: {
-                latitude: formData.latitude,
-                longitude: formData.longitude,
-            }
+        const newItem = {
+          id: mockItems.length + 1,
+          type: itemType,
+          studentName: "Minh Tuong Nguyen",
+          spireId: 34451343,
+          location: "Hamlin",
+          date: new Date().toISOString().split('T')[0],
+          image: formData.image,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
         };
-
-        if (itemType === 'ucard') {
-            requestBody.studentName = formData.studentName;
-            requestBody.cardNumber = formData.cardNumber;
-        } else {
-            requestBody.itemDescription = formData.itemDescription;
-        }
-
-        if (image) {
-            const blob = base64ToBlob(image);
-            requestBody.imageFile = blob;
-        }
-
-        console.log("Request Body:", requestBody);
-        
+        mockItems.push(newItem);
+        setSuccessMessage('Item reported successfully!');
+        // Reset form
         setFormData({
-            studentName: '',
-            cardNumber: '',
-            itemDescription: '',
-            location: '',
-            pinLocation: '',
-            image: '',
-            latitude: null,
-            longitude: null,
+          studentName: '',
+          spireId: '',
+          location: '',
+          pinLocation: '',
+          image: '',
+          latitude: null,
+          longitude: null,
         });
-        setImage(null);
-        setCameraOpened(false);
-        setItemType('ucard');
-
-        if (videoRef.current && videoRef.current.srcObject) {
-            videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
-
-        setSuccessMessage('Report submitted successfully');
-
-        setTimeout(() => {
-            setSuccessMessage('');
-        }, 5000);
-    };
+      };
 
     const startCamera = async () => {
         setImage(null);
@@ -240,32 +206,8 @@ function ReportForm() {
                     {image && <img src={image} alt="Captured" className="mt-2" />}
 
                     {itemType === 'ucard' ? (
-                        <>
-                            <div className="space-y-2">
-                                <label htmlFor="studentName" className='block text-base font-semibold'>Student Name</label>
-                                <input
-                                    type="text"
-                                    id="studentName"
-                                    name="studentName"
-                                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent'
-                                    placeholder='E.g. John Doe'
-                                    value={formData.studentName}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label htmlFor="cardNumber" className='block text-base font-semibold'>Card Number</label>
-                                <input
-                                    type="text"
-                                    id="cardNumber"
-                                    name="cardNumber"
-                                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent'
-                                    placeholder='Last 4 digits of card number'
-                                    value={formData.cardNumber}
-                                    onChange={handleInputChange}
-                                    maxLength={4}
-                                />
-                            </div>
+                        <>  
+                            
                         </>
                     ) : (
                         <div className="space-y-2">
