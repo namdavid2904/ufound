@@ -26,7 +26,7 @@ var cardSchema = new mongoose.Schema({
         default: Date.now
     },
     embedding: {
-        type: Array,
+        type: [Number],
         required: true,
     }
 },{
