@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 function SearchForm({ onSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-
+  
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -12,6 +12,8 @@ function SearchForm({ onSearch }) {
       onSearch(searchQuery);
     }
   };
+
+  
 
   return (
     <div className="w-full">

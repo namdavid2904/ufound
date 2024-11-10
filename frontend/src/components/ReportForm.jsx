@@ -8,6 +8,11 @@ function ReportForm() {
     const [itemType, setItemType] = useState('ucard');
     const [cameraOpened, setCameraOpened] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+   
+    const [userLocation, setUserLocation] = useState({ latitude: null, longitude: null });
+
+    
+    
 
     const [cardFormData, setCardFormData] = useState({
         studentName: '',
@@ -36,20 +41,30 @@ function ReportForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const formData = new FormData();
-        formData.append('studentName', cardFormData.studentName);
-        formData.append('cardNumber', cardFormData.cardNumber);
-        formData.append('location', cardFormData.location);
+        const requestBody = {
+            location: cardFormData.location,
+            image: image, // base64 format
+            imageFile: null, // will be set if image exists
+            coordinates: {
+                latitude: cardFormData.latitude,
+                longitude: cardFormData.longitude,
+            }
+        };
+    
         if (image) {
             const blob = base64ToBlob(image);
-            formData.append('image', blob, 'ucard.png');
+            requestBody.imageFile = blob;
         }
-
-        // Process formData (e.g., send to server)
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
-        }
-
+    
+        // Console log the required information
+        console.log("Image in base64:", requestBody.image);
+        console.log("Image file:", requestBody.imageFile);
+        console.log("Location:", requestBody.location);
+        console.log("Coordinates:", requestBody.coordinates);
+    
+        // Process requestBody (e.g., send to server)
+        console.log("Request Body:", requestBody);
+    
         // Reset form states to default
         setCardFormData({
             studentName: '',
@@ -57,17 +72,19 @@ function ReportForm() {
             location: '',
             pinLocation: '',
             image: '',
+            latitude: null,
+            longitude: null,
         });
         setImage(null);
         setCameraOpened(false);
         setItemType('ucard');
-
+    
         // Stop the video stream if active
         if (videoRef.current && videoRef.current.srcObject) {
             videoRef.current.srcObject.getTracks().forEach(track => track.stop());
             videoRef.current.srcObject = null;
         }
-
+    
         // Set success message
         setSuccessMessage('Report submitted successfully');
 
@@ -80,7 +97,9 @@ function ReportForm() {
     const startCamera = async () => {
         setImage(null); // Clear previous image
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: "environment" } }
+                });
             videoRef.current.srcObject = stream;
 
             videoRef.current.onloadedmetadata = () => {
@@ -92,8 +111,23 @@ function ReportForm() {
                         console.error("Error playing the video: ", playError);
                     });
             };
-        } catch (err) {
+        }catch (err) {
             console.error("Error accessing the camera: ", err);
+        }finally{
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true
+                });
+            videoRef.current.srcObject = stream;
+
+            videoRef.current.onloadedmetadata = () => {
+                videoRef.current.play()
+                    .then(() => {
+                        setCameraOpened(true);
+                    })
+                    .catch((playError) => {
+                        console.error("Error playing the video: ", playError);
+                    });
+            };
         }
     };
 
@@ -110,13 +144,22 @@ function ReportForm() {
     };
 
     const handleMapPinClick = () => {
-        // Implement your mapping logic here
-        // After mapping is complete, set isPinMapped to true
-        setCardFormData(prevData => ({
-            ...prevData,
-            pinLocation: 'Mapped Location'
-        }));
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation({ latitude, longitude });
+                setCardFormData((prevData) => ({
+                    ...prevData,
+                    latitude,
+                    longitude,
+                }));
+            },
+            (error) => console.error("Error fetching location: ", error),
+            { enableHighAccuracy: true }
+        );
     };
+
+    
 
     const isFormValid = () => {
         return (
@@ -182,7 +225,7 @@ function ReportForm() {
                 onClick={handleMapPinClick}
                 className="btn w-full flex items-center justify-center bg-gray-700 rounded-md px-2 py-2 text-gray-100 mt-4"
             >
-                <MapPin className="mr-2 h-4 w-4" /> Map AR Pin to Location
+                <MapPin className="mr-2 h-4 w-4" /> Pin Location for AR/Map
             </button>
                 <button
                     type="submit"
@@ -251,13 +294,13 @@ function TemplateUCard(props) {
 
             {/* Found Location Input */}
             <div className="space-y-2">
-                <label htmlFor="location" className='block text-base font-semibold'>Found Location</label>
+                <label htmlFor="location" className='block text-base font-semibold'>Found Location Description</label>
                 <input
                     type="text"
                     id="location"
                     name="location"
                     className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent'
-                    placeholder='E.g. Park, Street Name'
+                    placeholder='E.g. Franklin Checkin/Deli side '
                     value={cardFormData.location}
                     onChange={handleInputChange}
                 />
