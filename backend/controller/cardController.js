@@ -1,5 +1,7 @@
 const Card = require('../models/Card');
 const { processImage } = require('../utils/extractData');
+const openai = require('../config/openaiClient');
+
 
 // User report found Ucard
 const reportFoundCard = async (req, res) => {
@@ -10,6 +12,13 @@ const reportFoundCard = async (req, res) => {
         // Extract text data from image
         const extractedData = await processImage(imageUrl); 
         const { spireId, studentName } = extractedData;
+
+        // Generate embedding with OpenAI
+        const textToEmbed = `${spireId} ${studentName} ${location}`;
+        const response = await openai.createEmbedding({
+            model: "text-embedding-ada-002",
+            input: textToEmbed,
+        })
 
         // Create a new card entry
         const newCard = new Card({ spireId: spireId, studentName: studentName, locationFound: location, imageUrl: imageUrl, finderEmail: email });
