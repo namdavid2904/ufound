@@ -10,10 +10,15 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "fs": "^0.0.1-security",
+    "google-auth-library": "^9.14.2",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "tesseract.js": "^5.1.1"
   }
 }
