@@ -34,16 +34,32 @@ const reportFoundCard = async (req, res) => {
 // Search lost card by spireId or student name
 const searchLostCard = async (req, res) => {
     try {
-      const { searchQuery } = req.query;
-  
-      // Build query conditionally
-      let query = {};
-      if (searchQuery) {
-        query = { $text: { $search: searchQuery } };
-      }
-  
-      const cards = await Card.find(query);
-      res.status(200).json(cards);
+
+    
+
+        // const { spireId, studentName } = req.query;
+        // let query = {};
+
+        const { searchQuery } = req.query;
+
+        // Tokenize the search query into individual words
+        const tokens = searchQuery.split(' ').map(token => `"${token}"`).join(' ');
+
+        // if (spireId) query.spireId = spireId;
+        // if (studentName) query.studentName = studentName;
+
+        // const cards = await Card.find(query);
+        // const cards = await Card.find({ $text: {
+            // $search: searchQuery
+        //}});
+        
+        // Full-text search using MongoDB's text search
+        const cards = await Card.find({
+            $text: { $search: tokens }
+        }).sort({ score: { $meta: "textScore" } });
+        
+        res.status(200).json(cards);
+
     } catch (error) {
       console.error('Error searching for lost item:', error);
       res.status(500).json({ message: 'Server error' });
