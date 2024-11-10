@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, CreditCard } from 'lucide-react';
+import { Camera, CreditCard, MapPin } from 'lucide-react';
 
 function ReportForm() {
     const [image, setImage] = useState(null);
@@ -7,6 +7,7 @@ function ReportForm() {
     const canvasRef = useRef(null);
     const [itemType, setItemType] = useState('ucard');
     const [cameraOpened, setCameraOpened] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     const [cardFormData, setCardFormData] = useState({
         studentName: '',
@@ -44,24 +45,53 @@ function ReportForm() {
             formData.append('image', blob, 'ucard.png');
         }
 
+        // Process formData (e.g., send to server)
         for (let [key, value] of formData.entries()) {
             console.log(key, value);
         }
-    };
 
-    const isFormValid = () => {
-        return (
-            cardFormData.location &&
-            image
-        );
+        // Reset form states to default
+        setCardFormData({
+            studentName: '',
+            cardNumber: '',
+            location: '',
+            pinLocation: '',
+            image: '',
+        });
+        setImage(null);
+        setCameraOpened(false);
+        setItemType('ucard');
+
+        // Stop the video stream if active
+        if (videoRef.current && videoRef.current.srcObject) {
+            videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+        }
+
+        // Set success message
+        setSuccessMessage('Report submitted successfully');
+
+        // Optionally hide the message after a few seconds
+        setTimeout(() => {
+            setSuccessMessage('');
+        }, 5000);
     };
 
     const startCamera = async () => {
+        setImage(null); // Clear previous image
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             videoRef.current.srcObject = stream;
-            videoRef.current.play();
-            setCameraOpened(true);
+
+            videoRef.current.onloadedmetadata = () => {
+                videoRef.current.play()
+                    .then(() => {
+                        setCameraOpened(true);
+                    })
+                    .catch((playError) => {
+                        console.error("Error playing the video: ", playError);
+                    });
+            };
         } catch (err) {
             console.error("Error accessing the camera: ", err);
         }
@@ -79,35 +109,31 @@ function ReportForm() {
         }));
     };
 
-    const TemplateUCard = () => {
+    const handleMapPinClick = () => {
+        // Implement your mapping logic here
+        // After mapping is complete, set isPinMapped to true
+        setCardFormData(prevData => ({
+            ...prevData,
+            pinLocation: 'Mapped Location'
+        }));
+    };
+
+    const isFormValid = () => {
         return (
-            <div className='flex flex-col gap-3'>
-                <button
-                    type="button"
-                    className='w-full bg-[#212721] text-white rounded-xl py-3 px-4 flex justify-center items-center space-x-2 hover:bg-gray-800 transition-colors'
-                    onClick={startCamera}
-                >
-                    <Camera className="w-5 h-5 mr-3" />
-                    <span>Open Camera</span>
-                </button>
-                <video ref={videoRef} style={{ width: '100%', display: image ? 'none' : 'block' }} />
-                <canvas ref={canvasRef} style={{ display: 'none' }} width={640} height={480} />
-                {image ? null : (
-                    <button
-                        type="button"
-                        className='w-full bg-[#212721] text-white rounded-xl py-3 px-4 hover:bg-gray-800 transition-colors'
-                        onClick={takePicture}
-                    >
-                        <span>Take Picture</span>
-                    </button>
-                )}
-                {image && <img src={image} alt="Captured" className="mt-2" />}
-            </div>
+            cardFormData.location &&
+            image
         );
     };
 
     return (
         <div>
+            {/* Display success message */}
+            {successMessage && (
+                <div className="bg-green-100 text-green-800 p-3 rounded mb-4">
+                    {successMessage}
+                </div>
+            )}
+
             <form className='flex flex-col gap-3 border border-color-gray px-4 py-4 rounded-lg' onSubmit={handleSubmit}>
                 <h1 className='text-2xl font-semibold'>Report Found Item</h1>
                 <h2 className='text-gray-400'>Provide details about the item you found</h2>
@@ -115,6 +141,7 @@ function ReportForm() {
                     <div>
                         <input
                             type="radio"
+                            name="itemType"
                             className="w-6 h-6 opacity-0 absolute"
                             checked={itemType === 'ucard'}
                             onChange={() => setItemType('ucard')}
@@ -129,6 +156,7 @@ function ReportForm() {
                     <div>
                         <input
                             type="radio"
+                            name="itemType"
                             className="w-6 h-6 opacity-0 absolute"
                             checked={itemType === 'general'}
                             onChange={() => setItemType('general')}
@@ -139,17 +167,23 @@ function ReportForm() {
                     </div>
                     <span className="text-base">General Items</span>
                 </label>
-                <div className="space-y-2">
-                    <label className='block text-base font-semibold'>Found Location</label>
-                    <input
-                        type="text"
-                        name="location"
-                        className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent'
-                        placeholder='E.g. Park, Street Name'
-                        value={cardFormData.location}
-                        onChange={handleInputChange}
-                    />
-                </div>
+                <TemplateUCard
+                    startCamera={startCamera}
+                    takePicture={takePicture}
+                    videoRef={videoRef}
+                    canvasRef={canvasRef}
+                    cameraOpened={cameraOpened}
+                    image={image}
+                    cardFormData={cardFormData}
+                    handleInputChange={handleInputChange}
+                />
+                <button
+                type="button"
+                onClick={handleMapPinClick}
+                className="btn w-full flex items-center justify-center bg-gray-700 rounded-md px-2 py-2 text-gray-100 mt-4"
+            >
+                <MapPin className="mr-2 h-4 w-4" /> Map AR Pin to Location
+            </button>
                 <button
                     type="submit"
                     className={`w-full flex items-center justify-center ${isFormValid() ? 'bg-[#962a3f] text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} rounded-xl py-3 px-4 space-x-2 hover:bg-gray-500 transition-colors disabled:bg-gray-300`}
@@ -159,9 +193,75 @@ function ReportForm() {
                     <span>Report Found Item</span>
                 </button>
             </form>
-            <TemplateUCard />
+
+            {/* Map AR Pin to Location Button */}
+            
         </div>
     );
 }
 
 export default ReportForm;
+
+function TemplateUCard(props) {
+    const {
+        startCamera,
+        takePicture,
+        videoRef,
+        canvasRef,
+        cameraOpened,
+        image,
+        cardFormData,
+        handleInputChange
+    } = props;
+
+    return (
+        <div className='flex flex-col gap-3'>
+            <button
+                type="button"
+                className='w-full bg-[#212721] text-white rounded-xl py-3 px-4 flex justify-center items-center space-x-2 hover:bg-gray-800 transition-colors'
+                onClick={startCamera}
+            >
+                <Camera className="w-5 h-5 mr-3" />
+                <span>Open Camera</span>
+            </button>
+
+            {/* Video Element */}
+            <div>
+                <video
+                    ref={videoRef}
+                    style={{ width: '100%', display: cameraOpened && !image ? 'block' : 'none' }}
+                    playsInline
+                />
+                <canvas ref={canvasRef} style={{ display: 'none' }} width={640} height={480} />
+            </div>
+
+            {/* "Take Picture" Button */}
+            {cameraOpened && !image && (
+                <button
+                    type="button"
+                    className='w-full bg-[#212721] text-white rounded-xl py-3 px-4 hover:bg-gray-800 transition-colors'
+                    onClick={takePicture}
+                >
+                    <span>Take Picture</span>
+                </button>
+            )}
+
+            {/* Display Captured Image */}
+            {image && <img src={image} alt="Captured" className="mt-2" />}
+
+            {/* Found Location Input */}
+            <div className="space-y-2">
+                <label htmlFor="location" className='block text-base font-semibold'>Found Location</label>
+                <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent'
+                    placeholder='E.g. Park, Street Name'
+                    value={cardFormData.location}
+                    onChange={handleInputChange}
+                />
+            </div>
+        </div>
+    );
+}
