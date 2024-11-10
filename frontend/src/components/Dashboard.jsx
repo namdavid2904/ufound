@@ -2,8 +2,7 @@ import  { useState } from 'react';
 
 import Tabs from './ui/Tabs';
 import ReportForm from './ReportForm';
-
-
+import SearchForm from './SearchForm';
 
 
 
@@ -16,7 +15,7 @@ export default function Dashboard() {
           <p className="text-gray-500 mb-6">Report or search for lost items</p>
           
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
-          {activeTab === "report" ? <ReportForm/> : null}
+          {activeTab === "report" ? <ReportForm/> : <SearchForm/>}
           
         </div>
       </div>
