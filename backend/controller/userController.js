@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// User Login/Signup with OAuth 2.0
 const googleLogin = async (req, res) => {
     try {
         const { id_token } = req.body;
