@@ -8,17 +8,20 @@ function LandingPage() {
     const { credential } = credentialResponse;
 
     try {
-      const response = await axios.post('http://localhost:3000/auth/google/callback', {
-        idToken: credential,
+      const response = await axios.post('http://localhost:4000/api/user/login', {
+        id_token: credential,
       });
 
-      console.log('User Info:', response.data);
-      // Here you would typically store the user info in your app's state
-      // and redirect the user to the main dashboard
+      // Store the token and redirect to dashboard
+      localStorage.setItem('token', response.data.token);
+      window.location.href = '/dashboard';
     } catch (error) {
       console.error('Error during Google Sign-In:', error);
-      // Here you would typically show an error message to the user
     }
+  };
+
+  const handleGoogleOAuth = () => {
+    window.location.href = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.REACT_APP_GOOGLE_CLIENT_ID}&redirect_uri=http://localhost:3000/auth/google/callback&response_type=code&scope=openid%20email%20profile`;
   };
 
   return (
@@ -39,6 +42,7 @@ function LandingPage() {
               text="signin_with"
               width="100%"
             />
+            <button onClick={handleGoogleOAuth}>Sign in with Google OAuth</button>
           </div>
         </div>
         <footer className="mt-8 text-center text-gray-600">

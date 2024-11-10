@@ -7,7 +7,7 @@ const { processImage } = require('../utils/extractData');
 const reportFoundCard = async (req, res) => {
     try {
         const { location, imageUrl } = req.body;
-        const { email } = req.user;
+        
 
         // Extract text data from image
         const extractedData = await processImage(imageUrl); 
@@ -21,7 +21,7 @@ const reportFoundCard = async (req, res) => {
         // })
 
         // Create a new card entry
-        const newCard = new Card({ spireId: spireId, studentName: studentName, locationFound: location, imageUrl: imageUrl, finderEmail: email });
+        const newCard = new Card({ spireId: spireId, studentName: studentName, locationFound: location, imageUrl: imageUrl, finderEmail: "mtnguyen@umass.edu" });
         await newCard.save();
 
         res.status(201).json({ message: 'Card reported successfully', newCard });
@@ -34,6 +34,9 @@ const reportFoundCard = async (req, res) => {
 // Search lost card by spireId or student name
 const searchLostCard = async (req, res) => {
     try {
+
+    
+
         // const { spireId, studentName } = req.query;
         // let query = {};
 
@@ -56,10 +59,11 @@ const searchLostCard = async (req, res) => {
         }).sort({ score: { $meta: "textScore" } });
         
         res.status(200).json(cards);
+
     } catch (error) {
-        console.error('Error searching for lost item:', error);
-        res.status(500).json({ message: 'Server error' });
-  }
-};
+      console.error('Error searching for lost item:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
 
 module.exports = { reportFoundCard, searchLostCard };

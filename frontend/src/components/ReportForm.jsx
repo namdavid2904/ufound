@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, CreditCard, MapPin } from 'lucide-react';
-import mockItems from './mock/mockdata';
+
+import axios from 'axios';
 
 function ReportForm() {
     const [image, setImage] = useState(null);
@@ -31,31 +32,29 @@ function ReportForm() {
 
 
     //MOCK DEMO 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const newItem = {
-          id: mockItems.length + 1,
-          type: itemType,
-          studentName: "Minh Tuong Nguyen",
-          spireId: 34451343,
-          location: "Hamlin",
-          date: new Date().toISOString().split('T')[0],
-          image: formData.image,
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-        };
-        mockItems.push(newItem);
-        setSuccessMessage('Item reported successfully!');
-        // Reset form
-        setFormData({
-          studentName: '',
-          spireId: '',
-          location: '',
-          pinLocation: '',
-          image: '',
-          latitude: null,
-          longitude: null,
-        });
+        const token = localStorage.getItem('token');
+        console.log({ImageUrl: image})
+        try {
+          const response = await axios.post(
+            'http://localhost:4000/api/card/report-found',
+            {
+              location: formData.location,
+              imageUrl: image,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+      
+          // Handle success
+          setSuccessMessage('Item reported successfully!');
+        } catch (error) {
+          console.error('Error reporting item:', error);
+        }
       };
 
     const startCamera = async () => {

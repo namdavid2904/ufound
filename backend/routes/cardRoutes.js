@@ -3,7 +3,7 @@ const { reportFoundCard, searchLostCard } = require('../controller/cardControlle
 const authMW = require('../middleware/authMW');
 const router = express.Router();
 
-router.post('/report-found', authMW, reportFoundCard);
-router.get('/search-lost', authMW, searchLostCard);
+router.post('/report-found', reportFoundCard);
+router.get('/search-lost', searchLostCard);
 
 module.exports = router;

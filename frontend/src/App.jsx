@@ -7,7 +7,7 @@ import ARView from './components/ui/ARView';
 
 
 function App() {
-    const isLoggedIn = true; // Replace with your actual authentication logic
+    const isLoggedIn = !!localStorage.getItem('token'); // Replace with your actual authentication logic
     
      
     return (
