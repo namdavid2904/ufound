@@ -1,29 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import mockItems from './mock/mockdata';
+import axios from 'axios';
 
 function SearchForm() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [recentItems, setRecentItems] = useState(mockItems);
 
-  const handleSearch = (e) => {
+  useEffect(() => {
+    const fetchRecentItems = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await axios.get('http://localhost:4000/api/card/search-lost', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            searchQuery: '',
+          },
+        });
+        setRecentItems(response.data);
+      } catch (error) {
+        console.error('Error fetching recent items:', error);
+      }
+    };
+    fetchRecentItems();
+  }, []);
+
+
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      const results = mockItems.filter(item =>
-        (item.type === 'ucard' && (
-          item.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.spireId?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.locationFound?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.finderEmail?.toLowerCase().includes(searchQuery.toLowerCase())
-        )) ||
-        (item.type === 'general' && (
-          item.itemDescription?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.spireId?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.locationFound?.toLowerCase().includes(searchQuery.toLowerCase())
-        ))
-      );
-      setSearchResults(results);
+    const token = localStorage.getItem('token');
+  
+    try {
+      const response = await axios.get('http://localhost:3000/api/card/search-lost', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          searchQuery,
+        },
+      });
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error('Error searching for items:', error);
     }
   };
 
