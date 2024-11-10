@@ -1,4 +1,4 @@
-import pytesseract
+import easyocr
 import io
 import base64
 import os
@@ -15,7 +15,7 @@ from ultralytics import YOLO
 
 class ImageProcessing():
     '''Process the raw Image from the front end'''
-    def __init__(self, model = 'yolov8m-seg.pt') -> None:
+    def __init__(self, model = 'yolov10x.pt') -> None:
         self.model = YOLO(model)
     def process(self, img):
         '''Crop to zoom in the uCard and Rotate to the Upright position 
@@ -32,10 +32,9 @@ class ImageProcessing():
                 if box.cls != 73:
                     continue
                 x_min, y_min, x_max, y_max = map(int, box.xyxy[0])
-
                 #Cropping
                 #For cv2 np.array
-                np_img = np_img[int(y_min) : int(y_max), int(x_min) : int(x_max)] 
+                np_img = np_img[int(y_min) : int(y_max), int(x_min) : int(x_max)]
                 img = img.crop((x_min, y_min, x_max, y_max))
 
                 #Doing rotation
@@ -113,67 +112,79 @@ def determine_orientation(image:np.array):
     # Determine orientation based on the white pixel counts
     if white_pixels_bottom <= white_pixels_top:
         orientation[180] += 1
-
     return orientation
 
-def extract_info(text):
-    '''Filter out only the Name and Spire ID'''
+# def extract_info_pytesseract(text):
+#     '''Filter out only the Name and Spire ID'''
+#     name = ''
+#     spire_id = ''
+#     line_of_string = text.split('\n')
+#     for s in line_of_string:
+#         words = s.split(" ")
+#         for w in words:
+#             all_num = True
+#             for c in w:
+#                 if not c.isdigit():
+#                     all_num = False
+#                     break
+#             if all_num and len(w) == 8:
+#                 spire_id = w
+#         if spire_id != '':
+#             name = re.sub(r'[^A-Za-z\s]', '', s[9:])
+#             return {'name': name,
+#                     'id': spire_id}
+
+def extract_info_easy_ocr(text_list):
     name = ''
     spire_id = ''
-    line_of_string = text.split('\n')
-    print(line_of_string)
-    for s in line_of_string:
-        words = s.split(" ")
-        for w in words:
-            all_num = True
-            for c in w:
-                if not c.isdigit():
-                    all_num = False
-                    break
-            if all_num and len(w) == 8:
-                spire_id = w
-        if spire_id != '':
-            name = re.sub(r'[^A-Za-z\s]', '', s[9:])
-            return {'name': name,
-                    'id': spire_id}
+    for word in text_list:
+        if word.isdigit() and len(word) == 8:
+            spire_id = word
+        if word.isupper():
+            if name != '':
+                name += ' '
+            name += word
+    return {'name': name,
+            'id': spire_id}
+            
 
-@app.route('/process_image', methods=['POST'])
-def process_image():
-    try:
-        if 'image' not in request.files:
-            return jsonify({"error": "No image uploaded"}), 400
+def process_image(image_url):
+    '''Take in an Image Data URI (base64 encoded)'''
+    # Open and Process the Image
+    image = open_base64_image(image_url)
+    
+    img_process = ImageProcessing()
+    new_img = img_process.process(image)
 
-        # Read and process the Image
-        image_file = request.files['image'] # -> Data URI URL
-        
-        # Open and Process the Image
-        image = open_base64_image(image_file)
-        img_process = ImageProcessing("models/yolov8x-seg.pt")
-        new_img = img_process.process(image)
-
-        # Extracting text from the newly process Image
-        text = pytesseract.image_to_string(new_img)
-        data = extract_info(text)
-        result = collection.insert_one(data)
-        return jsonify({
-            "data": data, 
-            "db_id": str(result.inserted_id)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # Extracting text from the newly process Image
+    text_reader = easyocr.Reader(['en'])
+    text = text_reader.readtext(new_img, detail=0)
+    return jsonify(extract_info_easy_ocr(text)) # <---------- Return a JSON object
 
 
-# if __name__ == "__main__":
-
+if __name__ == "__main__":
+    # ----------------> Call process_image to run the code <---------------------
+    # process_image(...)
+    
+    
     # Testing Implementation
     # with open('message.txt', 'r') as file:
     #     link = file.read()
     
     # test_image = open_base64_image(link)
-    # test_image.save("test.png")
-    # test_img_process = ImageProcessing("models/yolov8m-seg.pt")
-    # test_new_img = test_img_process.process(test_image)
+    # test_img_process = ImageProcessing()
+    # reader = easyocr.Reader(['en'])
+    # for i in range(1,71):
+    #     print(f'Picture {i}')
+    #     test_image = Image.open(f'input_img/test ({i}).jpeg')
+    #     test_image.load()
 
-    # t = pytesseract.image_to_string(test_new_img)
-    # d = extract_info(t)
-    # print(d)
+    #     test_new_img = test_img_process.process(test_image)
+
+
+    #     res = reader.readtext(test_new_img, detail=0)
+    #     print(extract_info_easy_ocr(res))
+    #     print('-------------------------------------')
+    #     t = pytesseract.image_to_string(test_new_img)
+    #     d = extract_info(t)
+    #     print(d)
