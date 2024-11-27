@@ -15,9 +15,12 @@ Data Processing: Flask with OCR for image analysis and text extraction to captur
 Implement Enhanced Python Script for Image Processing
 Currently, UFound uses a simple OCR model (tesseract.js) to read text from captured images and return a string. This approach has limitations, particularly if the image is rotated or taken from a distance, reducing OCR accuracy. To improve this, we developed a Python script that incorporates advanced computer vision techniques to enhance OCR accuracy.
 
-## Card Detection: The script uses an object detection model to identify the card and outline its bounding box within the image. This enables the script to crop a close-up version of the UCard for better OCR performance.
-## Orientation Detection: To address orientation issues, we apply a rotation step if the image is a vertical rectangle, as UCards are typically horizontal. Then, using Otsu thresholding, we detect the white space in the bottom third of the UCard image to determine if the picture is correctly oriented. Although developing a custom orientation model would require a substantial training dataset (unfeasible within 36 hours), this workaround has shown promising results.
-## Expanding Python's Capabilities: Moving to Python for image processing also opens up potential to add further capabilities, such as identifying “general items” beyond UCards.
+## Card Detection: 
+The script uses an object detection model to identify the card and outline its bounding box within the image. This enables the script to crop a close-up version of the UCard for better OCR performance.
+## Orientation Detection: 
+To address orientation issues, we apply a rotation step if the image is a vertical rectangle, as UCards are typically horizontal. Then, using Otsu thresholding, we detect the white space in the bottom third of the UCard image to determine if the picture is correctly oriented. Although developing a custom orientation model would require a substantial training dataset (unfeasible within 36 hours), this workaround has shown promising results.
+## Expanding Python's Capabilities: 
+Moving to Python for image processing also opens up potential to add further capabilities, such as identifying “general items” beyond UCards.
 ## Developing for General Items
 In the future, we aim to expand UFound to support locating a variety of commonly misplaced items like calculators, umbrellas, clothing, chargers, and more. Achieving this will require a revised structure, as well as an enhanced database schema capable of distinguishing similar items. This expansion will likely involve large language models (LLMs) and additional computer vision models to better identify and categorize various items accurately.
 
