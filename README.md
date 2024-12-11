@@ -12,7 +12,7 @@ Frontend: React for building a responsive, intuitive user interface.
 Backend: Node.js and Express to handle server requests and responses.
 Data Processing: Flask with OCR for image analysis and text extraction to capture SpireID and student name details from UCard images.
 # What's next for UFound
-Implement Enhanced Python Script for Image Processing
+Implement Enhanced Python Script for Image Processing  
 Currently, UFound uses a simple OCR model (tesseract.js) to read text from captured images and return a string. This approach has limitations, particularly if the image is rotated or taken from a distance, reducing OCR accuracy. To improve this, we developed a Python script that incorporates advanced computer vision techniques to enhance OCR accuracy.
 
 ## Card Detection: 
